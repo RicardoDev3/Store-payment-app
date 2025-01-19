@@ -7,6 +7,11 @@ import { clearCar, removeFromCar } from "../../redux/slices/carSlice/carSlice";
 const Carshop = () => {
   const { car, total } = useSelector((state) => state.car);
   const dispatch = useDispatch();
+
+  const formatPrice = () => {
+
+  }
+
   return (
     <div className="cart-container">
       <h1 className="cart-title">Tu Carrito</h1>
@@ -20,7 +25,7 @@ const Carshop = () => {
                 <div className="cart-item-details">
                   <h2 className="cart-item-name">{product.name}</h2>
                   <p className="cart-item-price">
-                    Precio: ${product.price} x {product.quantity}
+                    Precio: ${product.price.toLocaleString('es-ES', { style: 'currency', currency: 'COP' })} x {product.quantity}
                   </p>
                 </div>
                 <button
@@ -33,7 +38,7 @@ const Carshop = () => {
             ))}
           </ul>
           <div className="cart-summary">
-            <h3 className="cart-total">Total: ${total}</h3>
+            <h3 className="cart-total">Total: ${total.toLocaleString('es-ES', { style: 'currency', currency: 'COP' })}</h3>
             <button className="cart-clear-button" onClick={() => dispatch(clearCar())}>
               Vaciar Carrito
             </button>

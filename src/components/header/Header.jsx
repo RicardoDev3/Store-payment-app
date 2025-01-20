@@ -4,7 +4,7 @@ import React from "react";
 import menu from "../../assets/icons/menu.png";
 import user from "../../assets/icons/user.png";
 import car from "../../assets/icons/car-shop.png";
-import logout from "../../assets/icons/Logout.png";
+import home from "../../assets/icons/home.png";
 import { Link } from "react-router-dom";
 import "./Header.css";
 
@@ -28,9 +28,9 @@ const Header = ({ cartCount }) => {
             <img src={car} alt="Carrito de compras" />
           </Link>
         </div>
-        <div className="logOut">
-          <img src={logout} alt="logout" />
-        </div>
+        <Link className="logOut" to="/">
+          <img src={home} alt="home" />
+        </Link>
       </div>
     </header>
   );

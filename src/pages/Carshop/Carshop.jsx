@@ -1,12 +1,38 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import React from "react";
+import React, { useState } from "react";
 import "./Carshop.css";
 import { useDispatch, useSelector } from "react-redux";
-import { clearCar, removeFromCar } from "../../redux/slices/carSlice/carSlice";
+import { clearCar, removeFromCar } from "../../store/reducers/carSlice";
+import trash from "../../assets/icons/trash.png";
+import PaymentForm from "../../components/PaymentForm/PaymentForm";
 
-const Carshop = () => {
+const Carshop = ({ setCartCount }) => {
   const { car, total } = useSelector((state) => state.car);
   const dispatch = useDispatch();
+  const [showModal, setShowModal] = useState(false);
+  const [productIds, setProductIds] = useState([]);
+
+  const removeItem = (product) => {
+    setCartCount((prevCount) => prevCount - 1);
+    dispatch(removeFromCar(product.name));
+  };
+
+  const cleanCarShop = () => {
+    setCartCount(0);
+    dispatch(clearCar());
+  };
+
+  const handlePayWithCard = () => {
+    const ids = car.map((product) => product.id);
+    setProductIds(ids);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
   return (
     <div className="cart-container">
       <h1 className="cart-title">Tu Carrito</h1>
@@ -20,25 +46,60 @@ const Carshop = () => {
                 <div className="cart-item-details">
                   <h2 className="cart-item-name">{product.name}</h2>
                   <p className="cart-item-price">
-                    Precio: ${product.price} x {product.quantity}
+                    Precio: $
+                    {product.price.toLocaleString("es-ES", {
+                      style: "currency",
+                      currency: "COP",
+                    })}{" "}
+                    x {product.quantity}
                   </p>
                 </div>
-                <button
-                  className="cart-remove-button"
-                  onClick={() => dispatch(removeFromCar(product.name))}
+                <div
+                  className="delete-item"
+                  onClick={() => removeItem(product)}
                 >
-                  Eliminar
-                </button>
+                  <img src={trash} alt="delete" />
+                </div>
               </li>
             ))}
           </ul>
           <div className="cart-summary">
-            <h3 className="cart-total">Total: ${total}</h3>
-            <button className="cart-clear-button" onClick={() => dispatch(clearCar())}>
-              Vaciar Carrito
-            </button>
+            <h3 className="cart-total">
+              Total: $
+              {
+                +total.toLocaleString("es-ES", {
+                  style: "currency",
+                  currency: "COP",
+                })
+              }
+            </h3>
+            <div className="buttons">
+              <button
+                className="cart-clear-button"
+                onClick={() => cleanCarShop()}
+              >
+                Vaciar Carrito
+              </button>
+              <button className="cart-pay-button" onClick={handlePayWithCard}>
+                Pagar con tarjeta
+              </button>
+            </div>
           </div>
         </>
+      )}
+
+      {/* Modal para el pago */}
+      {showModal && (
+        <div className="modal-backdrop">
+          <div className="modal">
+            <h2>Datos de pago</h2>
+            <PaymentForm
+              total={total}
+              closeModal={closeModal}
+              idProducts={productIds}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

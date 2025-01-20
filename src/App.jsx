@@ -15,7 +15,7 @@ function App() {
         <div className='app-content'>
           <Routes>
             <Route path="/" element={<Home setCartCount={setCartCount} />} />
-            <Route path='/carshop' element={<Car />} /> 
+            <Route path='/carshop' element={<Car setCartCount={setCartCount}/>} /> 
           </Routes>
         </div>
       </Suspense>

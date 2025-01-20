@@ -45,7 +45,7 @@ const PaymentForm = ({ total, closeModal, idProducts }) => {
   };
 
   const createToken = async () => {
-    const url = "https://api-sandbox.wompi.co/v1/tokens/cards";
+    const url = "https://api-sandbox.co.uat.wompi.dev/v1/tokens/cards";
     const data = {
       number: cardNumber,
       cvc: cvv,
@@ -61,7 +61,7 @@ const PaymentForm = ({ total, closeModal, idProducts }) => {
           Authorization: "Bearer pub_stagtest_g2u0HQd3ZMh05hsSgTS2lUV8t3s4mOt7",
         },
       });
-      console.log("Token generado:", response.data);
+      console.log("Token generado:", response);
       return response.data;
     } catch (error) {
       console.error(
@@ -70,6 +70,19 @@ const PaymentForm = ({ total, closeModal, idProducts }) => {
       );
     }
   };
+  
+  const generateTokenAcepted = async() => {
+    try {
+      const acepted = axios.get('https://api-sandbox.co.uat.wompi.dev/v1/merchants/pub_stagtest_g2u0HQd3ZMh05hsSgTS2lUV8t3s4mOt7')
+      return acepted
+    } catch (error) {
+      console.error(
+        "Error generando el token:",
+        error.response ? error.response.data : error
+      );
+      
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -101,14 +114,17 @@ const PaymentForm = ({ total, closeModal, idProducts }) => {
     setErrorMessage("");
     try {
       const tokenCard = await createToken();
+      const tokenAcepted = await generateTokenAcepted()
 
-      console.log(tokenCard);
-      console.log(idProducts);
+      console.log(tokenCard.data.id);
+      console.log(tokenAcepted);
       const response = await axios.post("http://localhost:3000/transactions", {
         customerName: cardHolder,
         customerEmail: email,
         productIds: idProducts,
         cardToken: tokenCard.data.id,
+        acceptance_token: tokenAcepted.data.data.presigned_acceptance.acceptance_token,
+        accept_personal_auth: tokenAcepted.data.data.presigned_personal_data_auth.acceptance_token
       });
 
       alert("¡Pago procesado exitosamente!");
@@ -196,14 +212,16 @@ const PaymentForm = ({ total, closeModal, idProducts }) => {
       <div className="summary">
         <p>
           Total: $
-          {total.toLocaleString("es-ES", {
-            style: "currency",
-            currency: "COP",
-          })}
+          {
+            +total.toLocaleString("es-ES", {
+              style: "currency",
+              currency: "COP",
+            })
+          }
         </p>
         <p>Tarifa base: $2,000</p>
         <p>Tarifa de entrega: $15,000</p>
-        <h3>Total final: ${(total + 2000 + 5000).toLocaleString("es-ES")}</h3>
+        <h3>Total final: ${(+total + 2000 + 15000).toLocaleString("es-ES")}</h3>
       </div>
       <div className="buttons-modal">
         <button type="button" onClick={closeModal}>

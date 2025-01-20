@@ -15,17 +15,17 @@ const Carshop = ({ setCartCount }) => {
 
   const removeItem = (product) => {
     setCartCount((prevCount) => prevCount - 1);
-    dispatch(removeFromCar(product.name))
-  }
-  
+    dispatch(removeFromCar(product.name));
+  };
+
   const cleanCarShop = () => {
     setCartCount(0);
-    dispatch(clearCar())
-  }
+    dispatch(clearCar());
+  };
 
   const handlePayWithCard = () => {
     const ids = car.map((product) => product.id);
-    setProductIds(ids)
+    setProductIds(ids);
     setShowModal(true);
   };
 
@@ -66,10 +66,12 @@ const Carshop = ({ setCartCount }) => {
           <div className="cart-summary">
             <h3 className="cart-total">
               Total: $
-              {total.toLocaleString("es-ES", {
-                style: "currency",
-                currency: "COP",
-              })}
+              {
+                +total.toLocaleString("es-ES", {
+                  style: "currency",
+                  currency: "COP",
+                })
+              }
             </h3>
             <div className="buttons">
               <button
@@ -78,10 +80,7 @@ const Carshop = ({ setCartCount }) => {
               >
                 Vaciar Carrito
               </button>
-              <button
-                className="cart-pay-button"
-                onClick={handlePayWithCard}
-              >
+              <button className="cart-pay-button" onClick={handlePayWithCard}>
                 Pagar con tarjeta
               </button>
             </div>
@@ -94,7 +93,11 @@ const Carshop = ({ setCartCount }) => {
         <div className="modal-backdrop">
           <div className="modal">
             <h2>Datos de pago</h2>
-            <PaymentForm total={total} closeModal={closeModal} idProducts={productIds} />
+            <PaymentForm
+              total={total}
+              closeModal={closeModal}
+              idProducts={productIds}
+            />
           </div>
         </div>
       )}

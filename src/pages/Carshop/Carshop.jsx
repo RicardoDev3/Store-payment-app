@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import "./Carshop.css";
 import { useDispatch, useSelector } from "react-redux";
-import { clearCar, removeFromCar } from "../../redux/slices/carSlice/carSlice";
+import { clearCar, removeFromCar } from "../../store/reducers/carSlice";
 import trash from "../../assets/icons/trash.png";
 import PaymentForm from "../../components/PaymentForm/PaymentForm";
 
@@ -11,6 +11,7 @@ const Carshop = ({ setCartCount }) => {
   const { car, total } = useSelector((state) => state.car);
   const dispatch = useDispatch();
   const [showModal, setShowModal] = useState(false);
+  const [productIds, setProductIds] = useState([]);
 
   const removeItem = (product) => {
     setCartCount((prevCount) => prevCount - 1);
@@ -23,6 +24,8 @@ const Carshop = ({ setCartCount }) => {
   }
 
   const handlePayWithCard = () => {
+    const ids = car.map((product) => product.id);
+    setProductIds(ids)
     setShowModal(true);
   };
 
@@ -91,7 +94,7 @@ const Carshop = ({ setCartCount }) => {
         <div className="modal-backdrop">
           <div className="modal">
             <h2>Datos de pago</h2>
-            <PaymentForm total={total} closeModal={closeModal} />
+            <PaymentForm total={total} closeModal={closeModal} idProducts={productIds} />
           </div>
         </div>
       )}

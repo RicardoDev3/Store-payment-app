@@ -1,16 +1,19 @@
+/* eslint-disable no-undef */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import visa from "../../assets/icons/Visa_Logo.png";
 import master from "../../assets/icons/MasterCard_Logo.svg";
 import "./PaymentForm.css";
+import axios from "axios";
 
-const PaymentForm = ({ total, closeModal }) => {
+const PaymentForm = ({ total, closeModal, idProducts }) => {
   const [cardNumber, setCardNumber] = useState("");
   const [cardHolder, setCardHolder] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [cvv, setCvv] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [email, setEmail] = useState("");
   const [cardType, setCardType] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -41,10 +44,44 @@ const PaymentForm = ({ total, closeModal }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const createToken = async () => {
+    const url = "https://api-sandbox.wompi.co/v1/tokens/cards";
+    const data = {
+      number: cardNumber,
+      cvc: cvv,
+      exp_month: expiryDate.split("/")[0],
+      exp_year: expiryDate.split("/")[1],
+      card_holder: cardHolder,
+    };
+
+    try {
+      const response = await axios.post(url, data, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer pub_stagtest_g2u0HQd3ZMh05hsSgTS2lUV8t3s4mOt7",
+        },
+      });
+      console.log("Token generado:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error generando el token:",
+        error.response ? error.response.data : error
+      );
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!cardNumber || !cardHolder || !expiryDate || !cvv || !deliveryAddress) {
+    if (
+      !cardNumber ||
+      !cardHolder ||
+      !expiryDate ||
+      !cvv ||
+      !deliveryAddress ||
+      !email
+    ) {
       setErrorMessage("Por favor, complete todos los campos.");
       return;
     }
@@ -56,10 +93,30 @@ const PaymentForm = ({ total, closeModal }) => {
       setErrorMessage("El CVV debe ser un número de 3 dígitos.");
       return;
     }
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      setErrorMessage("El correo es invalido.");
+      return;
+    }
 
     setErrorMessage("");
-    alert("¡Pago procesado exitosamente!");
-    closeModal();
+    try {
+      const tokenCard = await createToken();
+
+      console.log(tokenCard);
+      console.log(idProducts);
+      const response = await axios.post("http://localhost:3000/transactions", {
+        customerName: cardHolder,
+        customerEmail: email,
+        productIds: idProducts,
+        cardToken: tokenCard.data.id,
+      });
+
+      alert("¡Pago procesado exitosamente!");
+      closeModal();
+    } catch (error) {
+      setErrorMessage("Error al procesar el pago. Intenta nuevamente.");
+      console.error("Error al crear la transacción:", error);
+    }
   };
 
   return (
@@ -125,6 +182,15 @@ const PaymentForm = ({ total, closeModal }) => {
             onChange={(e) => setDeliveryAddress(e.target.value)}
           />
         </div>
+        <div className="input-form">
+          <label>Correo</label>
+          <input
+            type="text"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
       </div>
       {errorMessage && <p className="error-message">{errorMessage}</p>}
       <div className="summary">
@@ -136,7 +202,7 @@ const PaymentForm = ({ total, closeModal }) => {
           })}
         </p>
         <p>Tarifa base: $2,000</p>
-        <p>Tarifa de entrega: $5,000</p>
+        <p>Tarifa de entrega: $15,000</p>
         <h3>Total final: ${(total + 2000 + 5000).toLocaleString("es-ES")}</h3>
       </div>
       <div className="buttons-modal">
